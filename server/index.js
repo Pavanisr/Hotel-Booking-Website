@@ -8,6 +8,9 @@ const bookingRoutes = require("./routes/bookings");
 
 const app = express();
 app.use(cors());
+
+// 🔥 THIS LINE IS MISSING IN YOUR PROJECT 🔥
+// Without this, req.body will always be undefined
 app.use(express.json());
 
 // Routes
