@@ -7,43 +7,64 @@ const amadeus = new Amadeus({
   clientSecret: process.env.AMADEUS_API_SECRET
 });
 
+// ----------------------------------------------------
 // 1️⃣ List hotels by city
+// ----------------------------------------------------
 const listHotelsByCity = async (req, res) => {
   try {
     const { cityCode } = req.query;
-    if (!cityCode) return res.status(400).json({ message: "cityCode is required" });
+    if (!cityCode) {
+      return res.status(400).json({ message: "cityCode is required" });
+    }
 
-    const response = await amadeus.client.get(
-      '/v2/reference-data/locations/hotels/by-city',
-      { cityCode }
-    );
+    const response = await amadeus.referenceData.locations.hotels.byCity.get({
+      cityCode
+    });
 
     res.json(response.data);
   } catch (err) {
-    console.error("listHotelsByCity error:", err.response ? err.response.data : err);
+    console.error(
+      "listHotelsByCity error:",
+      err.response ? err.response.data : err
+    );
     res.status(500).json({ error: "Failed to fetch hotels list" });
   }
 };
 
-// 2️⃣ Get hotel offers (rooms, prices) by hotel IDs
+// ----------------------------------------------------
+// 2️⃣ Get hotel offers (rooms + pricing)
+// ----------------------------------------------------
 const getHotelOffers = async (req, res) => {
   try {
-    const { cityCode, adults = 1, checkInDate, checkOutDate, roomQuantity = 1 } = req.query;
+    const {
+      cityCode,
+      adults = 1,
+      checkInDate,
+      checkOutDate,
+      roomQuantity = 1
+    } = req.query;
 
     if (!cityCode || !checkInDate || !checkOutDate) {
-      return res.status(400).json({ message: "cityCode, checkInDate, and checkOutDate are required" });
+      return res.status(400).json({
+        message: "cityCode, checkInDate, and checkOutDate are required"
+      });
     }
 
-    // 1️⃣ Get list of hotels in the city
-    const hotelsResponse = await amadeus.client.get('/v2/reference-data/locations/hotels/by-city', { cityCode });
+    // 1️⃣ Get hotels in the city
+    const hotelsResponse =
+      await amadeus.referenceData.locations.hotels.byCity.get({
+        cityCode
+      });
+
     const hotels = hotelsResponse.data;
 
     if (!hotels || hotels.length === 0) {
       return res.status(404).json({ message: "No hotels found in this city" });
     }
 
-    // 2️⃣ Try hotel offers one by one until we get results
     let offers = [];
+
+    // 2️⃣ Get offers for each hotel
     for (let hotel of hotels) {
       try {
         const params = {
@@ -54,30 +75,29 @@ const getHotelOffers = async (req, res) => {
           roomQuantity
         };
 
-        const response = await amadeus.client.get('/v2/shopping/hotel-offers', params);
+        // ⭐ Correct method for hotel offers
+        const response = await amadeus.shopping.hotelOffersSearch.get(params);
 
         if (response.data && response.data.length > 0) {
           offers.push(...response.data);
         }
       } catch (err) {
-        // Ignore hotels with no offers (404)
-        if (err.code !== 'NotFoundError') {
-          console.error(`Error fetching offers for ${hotel.hotelId}:`, err);
-        }
+        console.error(
+          `Error fetching offers for ${hotel.hotelId}:`,
+          err.response?.data || err.message
+        );
       }
     }
 
     if (offers.length === 0) {
-      return res.status(404).json({ message: "No offers available for hotels in this city" });
+      return res.status(404).json({ message: "No offers available" });
     }
 
     res.json(offers);
-
   } catch (err) {
-    console.error("getHotelOffers error full:", err);
+    console.error("getHotelOffers error:", err);
     res.status(500).json({ error: "Failed to fetch hotel offers" });
   }
 };
-
 
 module.exports = { listHotelsByCity, getHotelOffers };
