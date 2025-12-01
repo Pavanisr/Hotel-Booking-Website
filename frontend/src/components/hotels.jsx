@@ -8,11 +8,11 @@ function Hotels() {
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
-    axios.get("/hotels").then(res => setHotels(res.data));
+    axios.get("/api/hotels").then(res => setHotels(res.data));
   }, []);
 
   const handleSearch = () => {
-    axios.get(`/hotels?city=${city}`).then(res => setHotels(res.data));
+    axios.get(`/api/hotels?city=${city}`).then(res => setHotels(res.data));
   };
 
   const handleBook = (hotel) => {
