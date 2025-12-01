@@ -50,17 +50,17 @@ const listHotelsByCity = async (req, res) => {
 
     // Fetch images for each hotel (parallel)
     const hotelsWithImages = await Promise.all(
-      hotels.map(async (hotel) => {
-        const images = await getHotelImages(hotel.hotelId);
+  hotels.map(async (hotel) => {
+    const images = await getHotelImages(hotel.hotelId);
+    return {
+      ...hotel,
+      photos: images.length > 0
+        ? images.map((url) => ({ url }))
+        : [{ url: `https://source.unsplash.com/600x400/?hotel-building&sig=${Math.random()}` }],
+    };
+  })
+);
 
-        return {
-          ...hotel,
-          images: images.length > 0 ? images : [
-            "https://via.placeholder.com/600x400?text=No+Image+Available"
-          ],
-        };
-      })
-    );
 
     res.json(hotelsWithImages);
   } catch (err) {
@@ -130,13 +130,27 @@ const getHotelOffers = async (req, res) => {
 };
 
 // ----------------------------------------------------
-// 5️⃣ Get ALL hotels (loop through many city codes) + IMAGES
+// 🔥 Helper to fetch hotel images
+// ----------------------------------------------------
+async function getHotelImages(hotelId) {
+  try {
+    const response = await amadeus.get(
+      `/v1/reference-data/locations/hotels/${hotelId}/photos`
+    );
+    if (!response.data || response.data.length === 0) return [];
+    return response.data.map((img) => img.url);
+  } catch (err) {
+    console.log(`❌ Failed to load images for ${hotelId}`);
+    return [];
+  }
+}
+
+// ----------------------------------------------------
+// 5️⃣ Get ALL hotels (loop through many city codes) + REAL IMAGES
 // ----------------------------------------------------
 const getAllHotels = async (req, res) => {
   try {
     const { cities } = req.query;
-
-    // Example: /all?cities=CMB,DXB,SIN
     const cityList = cities ? cities.split(",") : [];
 
     if (cityList.length === 0) {
@@ -145,48 +159,36 @@ const getAllHotels = async (req, res) => {
       });
     }
 
-    let finalResult = [];
+    const finalResult = [];
 
-    for (let city of cityList) {
+    for (const city of cityList) {
       try {
         // 1️⃣ Fetch hotels for this city
-        const hotelsResponse =
-          await amadeus.referenceData.locations.hotels.byCity.get({
-            cityCode: city,
-          });
-
+        const hotelsResponse = await amadeus.referenceData.locations.hotels.byCity.get({
+          cityCode: city,
+        });
         const hotels = hotelsResponse.data;
-        let hotelsWithImages = [];
 
-        // 2️⃣ Fetch images for EACH hotel
-        for (let hotel of hotels) {
-          let photos = [];
+        // 2️⃣ Fetch images in parallel for each hotel
+        const hotelsWithImages = await Promise.all(
+          hotels.map(async (hotel) => {
+            const images = await getHotelImages(hotel.hotelId);
+            return {
+              ...hotel,
+              photos: images.length > 0
+                ? images.map((url) => ({ url }))
+                : [{ url: `https://source.unsplash.com/600x400/?hotel-building&sig=${Math.random()}` }],
+            };
+          })
+        );
 
-          try {
-            const photoResponse =
-              await amadeus.referenceData.locations.hotels.photos.get({
-                hotelId: hotel.hotelId,
-              });
-
-            photos = photoResponse.data || [];
-          } catch (err) {
-            console.log(`No images for hotel ${hotel.hotelId}`);
-          }
-
-          hotelsWithImages.push({
-            ...hotel,
-            photos,
-          });
-        }
-
-        // 3️⃣ Push final result for this city
+        // 3️⃣ Push city + hotels
         finalResult.push({
           city,
           hotels: hotelsWithImages,
         });
-
       } catch (err) {
-        console.log(`Failed to fetch city: ${city}`);
+        console.log(`Failed to fetch city: ${city}`, err.message);
       }
     }
 
@@ -196,6 +198,5 @@ const getAllHotels = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch all hotels" });
   }
 };
-
 
 module.exports = { listHotelsByCity, getHotelOffers,getAllHotels };
