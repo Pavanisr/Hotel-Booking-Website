@@ -129,4 +129,73 @@ const getHotelOffers = async (req, res) => {
   }
 };
 
-module.exports = { listHotelsByCity, getHotelOffers };
+// ----------------------------------------------------
+// 5️⃣ Get ALL hotels (loop through many city codes) + IMAGES
+// ----------------------------------------------------
+const getAllHotels = async (req, res) => {
+  try {
+    const { cities } = req.query;
+
+    // Example: /all?cities=CMB,DXB,SIN
+    const cityList = cities ? cities.split(",") : [];
+
+    if (cityList.length === 0) {
+      return res.status(400).json({
+        message: "Provide cities list. Example: /all?cities=CMB,DXB,SIN",
+      });
+    }
+
+    let finalResult = [];
+
+    for (let city of cityList) {
+      try {
+        // 1️⃣ Fetch hotels for this city
+        const hotelsResponse =
+          await amadeus.referenceData.locations.hotels.byCity.get({
+            cityCode: city,
+          });
+
+        const hotels = hotelsResponse.data;
+        let hotelsWithImages = [];
+
+        // 2️⃣ Fetch images for EACH hotel
+        for (let hotel of hotels) {
+          let photos = [];
+
+          try {
+            const photoResponse =
+              await amadeus.referenceData.locations.hotels.photos.get({
+                hotelId: hotel.hotelId,
+              });
+
+            photos = photoResponse.data || [];
+          } catch (err) {
+            console.log(`No images for hotel ${hotel.hotelId}`);
+          }
+
+          hotelsWithImages.push({
+            ...hotel,
+            photos,
+          });
+        }
+
+        // 3️⃣ Push final result for this city
+        finalResult.push({
+          city,
+          hotels: hotelsWithImages,
+        });
+
+      } catch (err) {
+        console.log(`Failed to fetch city: ${city}`);
+      }
+    }
+
+    res.json(finalResult);
+  } catch (err) {
+    console.error("getAllHotels error:", err);
+    res.status(500).json({ error: "Failed to fetch all hotels" });
+  }
+};
+
+
+module.exports = { listHotelsByCity, getHotelOffers,getAllHotels };
