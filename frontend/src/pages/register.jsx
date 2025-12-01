@@ -1,9 +1,7 @@
-"use client";
-
 import React, { useState, useContext } from "react";
 import axios from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom"; // React Router for navigation
 
 function Register() {
   const [name, setName] = useState("");
@@ -13,7 +11,7 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { setUser, setToken } = useContext(AuthContext);
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,6 +19,7 @@ function Register() {
     setError("");
 
     try {
+      // Register user
       const response = await axios.post("/auth/register", {
         name,
         email,
@@ -30,18 +29,16 @@ function Register() {
 
       const { user } = response.data;
 
-      // Optionally, automatically login after registration
-      const loginRes = await axios.post("/auth/login", {
-        email,
-        password,
-      });
+      // Auto-login after registration
+      const loginRes = await axios.post("/auth/login", { email, password });
       const { token } = loginRes.data;
 
+      // Save token and user info in context/localStorage
       setToken(token);
-      setUser({ name: user.name, email: user.email });
+      setUser({ name: user.name, email: user.email, phone });
       localStorage.setItem("token", token);
 
-      router.push("/"); // redirect to home or dashboard
+      navigate("/"); // Redirect to home/dashboard
     } catch (err) {
       console.error(err);
       if (err.response) {
@@ -116,14 +113,19 @@ function Register() {
             className="btn btn-success w-100 rounded-3"
             disabled={loading}
           >
-            {loading && <span className="spinner-border spinner-border-sm me-2"></span>}
+            {loading && (
+              <span className="spinner-border spinner-border-sm me-2"></span>
+            )}
             Register
           </button>
         </form>
 
         <div className="mt-3 text-center">
           <p className="text-muted mb-0">
-            Already have an account? <a href="/login" className="text-success">Login</a>
+            Already have an account?{" "}
+            <a href="/login" className="text-success">
+              Login
+            </a>
           </p>
         </div>
       </div>

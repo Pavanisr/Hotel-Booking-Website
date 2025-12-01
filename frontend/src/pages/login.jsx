@@ -1,17 +1,15 @@
-"use client";
-
 import React, { useState, useContext } from "react";
 import axios from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { setUser, setToken } = useContext(AuthContext);
-  const router = useRouter();
+  const { login } = useContext(AuthContext); // Use login function from context
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,13 +20,10 @@ function Login() {
       const response = await axios.post("/auth/login", { email, password });
       const { token } = response.data;
 
-      // Store token in context/localStorage
-      setToken(token);
-      setUser({ email }); // optionally store more user info
+      // Use context login function to save user + token
+      login({ email, token });
 
-      localStorage.setItem("token", token);
-
-      router.push("/"); // redirect to home or dashboard
+      navigate("/"); // redirect to home or dashboard
     } catch (err) {
       console.error(err);
       if (err.response) {
@@ -42,8 +37,14 @@ function Login() {
   };
 
   return (
-    <div className="d-flex align-items-center justify-content-center" style={{ minHeight: "100vh", background: "#f5f5f5" }}>
-      <div className="card shadow-lg p-4 rounded-4" style={{ maxWidth: "400px", width: "100%" }}>
+    <div
+      className="d-flex align-items-center justify-content-center"
+      style={{ minHeight: "100vh", background: "#f5f5f5" }}
+    >
+      <div
+        className="card shadow-lg p-4 rounded-4"
+        style={{ maxWidth: "400px", width: "100%" }}
+      >
         <h3 className="text-center mb-4 fw-bold">Login</h3>
 
         {error && <div className="alert alert-danger">{error}</div>}
@@ -76,16 +77,19 @@ function Login() {
             className="btn btn-success w-100 rounded-3"
             disabled={loading}
           >
-            {loading ? (
+            {loading && (
               <span className="spinner-border spinner-border-sm me-2"></span>
-            ) : null}
+            )}
             Login
           </button>
         </form>
 
         <div className="mt-3 text-center">
           <p className="text-muted mb-0">
-            Don't have an account? <a href="/register" className="text-success">Register</a>
+            Don't have an account?{" "}
+            <a href="/register" className="text-success">
+              Register
+            </a>
           </p>
         </div>
       </div>

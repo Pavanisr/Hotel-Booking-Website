@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect, useState, useContext } from "react";
 import axios from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
@@ -22,6 +20,7 @@ function Bookings() {
         setBookings(response.data);
       } catch (err) {
         console.error(err);
+        alert("Failed to fetch bookings");
       } finally {
         setLoading(false);
       }
