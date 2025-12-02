@@ -29,7 +29,7 @@ root.render(
           <Route path="/bookings" element={<Bookings />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>
-        <Footer />
+      
       </Router>
     </AuthProvider>
   </React.StrictMode>
