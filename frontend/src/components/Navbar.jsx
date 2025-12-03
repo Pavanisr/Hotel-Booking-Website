@@ -54,6 +54,7 @@ function Navbar() {
                   role="button"
                   data-bs-toggle="dropdown"
                 >
+                  {/* Show user's name */}
                   {user.name}
                 </span>
                 <ul className="dropdown-menu dropdown-menu-end">

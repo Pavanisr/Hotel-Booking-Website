@@ -51,5 +51,33 @@ const login = async (req, res) => {
     res.status(500).json({ error: "Login failed" });
   }
 };
+const getProfile = async (req, res) => {
+  try {
+    console.log("REQ USER:", req.user); // debug STEP 1
 
-module.exports = { register, login };
+    const userId = req.user?.id;
+    console.log("USER ID:", userId); // debug STEP 2
+
+    const result = await pool.query(
+      `SELECT id, name, email, phone FROM users WHERE id=$1`,
+      [userId]
+    );
+
+    console.log("DB RESULT:", result.rows);
+    console.log("🔎 TOKEN USER:", req.user);
+ // debug STEP 3
+
+    if (result.rows.length === 0)
+      return res.status(404).json({ message: "User not found" });
+
+    res.json({ user: result.rows[0] });
+  } catch (err) {
+    console.error("PROFILE ERROR:", err); // show actual error
+    res.status(500).json({ error: "Failed to fetch profile" });
+  }
+};
+
+module.exports = { register, login, getProfile };
+
+
+
