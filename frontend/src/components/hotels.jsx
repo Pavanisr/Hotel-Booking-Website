@@ -1,18 +1,24 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 function Hotels() {
   const [hotels, setHotels] = useState([]);
   const [city, setCity] = useState("");
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(9);
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
-  const { user } = useContext(AuthContext);
-  const navigate = useNavigate();
+  const { user, token } = useContext(AuthContext);
 
+  // Modal state
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [selectedHotel, setSelectedHotel] = useState(null);
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingError, setBookingError] = useState("");
+
+  // Fetch hotels (same as before)
   const normalizeHotels = (data) => {
     if (!data || data.length === 0) return [];
     if (data[0]?.city && data[0]?.hotels) {
@@ -63,18 +69,55 @@ function Hotels() {
     }
   };
 
-  const handleBook = (hotel) => {
+  // Open booking modal
+  const handleBookNow = (hotel) => {
     if (!user) {
-      setShowLoginPrompt(true); // Show login prompt
+      alert("Please login to book a hotel.");
       return;
     }
-    // Navigate to bookings page for logged-in users
-    navigate("/bookings");
+    setSelectedHotel(hotel);
+    setShowBookingModal(true);
+    setCheckIn("");
+    setCheckOut("");
+    setBookingError("");
   };
 
-  const handleSeeMore = () => setVisibleCount((prev) => prev + 9);
+  // Submit booking
+  const handleConfirmBooking = async () => {
+    if (!checkIn || !checkOut) {
+      setBookingError("Please select check-in and check-out dates.");
+      return;
+    }
 
-  const closePrompt = () => setShowLoginPrompt(false);
+    setBookingLoading(true);
+    try {
+      await axios.post(
+        "/bookings/create",
+        {
+          hotel_id: selectedHotel.hotelId,
+          hotel_name: selectedHotel.name,
+          room_type: "Standard", // could be dynamic if user selects
+          price: selectedHotel.price || 200,
+          check_in: checkIn,
+          check_out: checkOut,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      alert("Booking successful!");
+      setShowBookingModal(false);
+    } catch (err) {
+      console.error(err);
+      setBookingError("Failed to create booking. Please try again.");
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
+  const handleCloseModal = () => setShowBookingModal(false);
+
+  const handleSeeMore = () => setVisibleCount((prev) => prev + 9);
 
   return (
     <div className="container my-5">
@@ -104,9 +147,7 @@ function Hotels() {
               <div key={hotel.hotelId} className="col-md-4">
                 <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
                   <img
-                    src={
-                      hotel.photos[0]?.url || "/images/placeholder.jpg"
-                    }
+                    src={hotel.photos[0]?.url || "/images/placeholder.jpg"}
                     alt={hotel.name}
                     className="card-img-top"
                     style={{ height: "220px", objectFit: "cover" }}
@@ -122,7 +163,7 @@ function Hotels() {
                       </span>
                       <button
                         className="btn btn-outline-success"
-                        onClick={() => handleBook(hotel)}
+                        onClick={() => handleBookNow(hotel)}
                       >
                         Book Now
                       </button>
@@ -143,27 +184,50 @@ function Hotels() {
         </>
       )}
 
-      {/* Login Prompt Modal */}
-      {showLoginPrompt && (
+      {/* Booking Modal */}
+      {showBookingModal && selectedHotel && (
         <div
           className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
           style={{ background: "rgba(0,0,0,0.5)", zIndex: 1000 }}
         >
-          <div className="card p-4 rounded-4" style={{ maxWidth: "400px" }}>
-            <h5 className="fw-bold mb-3">Login Required</h5>
-            <p>You must be logged in to book a hotel.</p>
+          <div className="card p-4 rounded-4" style={{ maxWidth: "450px", width: "100%" }}>
+            <h5 className="fw-bold mb-3">{selectedHotel.name}</h5>
+            <p className="mb-2">{selectedHotel.address?.cityName}</p>
+
+            <div className="mb-3">
+              <label className="form-label">Check-in</label>
+              <input
+                type="date"
+                className="form-control"
+                value={checkIn}
+                onChange={(e) => setCheckIn(e.target.value)}
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Check-out</label>
+              <input
+                type="date"
+                className="form-control"
+                value={checkOut}
+                onChange={(e) => setCheckOut(e.target.value)}
+              />
+            </div>
+
+            {bookingError && <div className="alert alert-danger">{bookingError}</div>}
+
             <div className="d-flex justify-content-between mt-4">
-              <button
-                className="btn btn-secondary"
-                onClick={closePrompt}
-              >
+              <button className="btn btn-secondary" onClick={handleCloseModal}>
                 Cancel
               </button>
               <button
                 className="btn btn-success"
-                onClick={() => navigate("/login")}
+                onClick={handleConfirmBooking}
+                disabled={bookingLoading}
               >
-                Login
+                {bookingLoading && (
+                  <span className="spinner-border spinner-border-sm me-2"></span>
+                )}
+                Confirm Booking
               </button>
             </div>
           </div>

@@ -1,78 +1,116 @@
 import React, { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Link } from "react-router-dom";
+import { FaUserCircle } from "react-icons/fa";
+import { Navbar as RBNavbar, Nav, Container, Dropdown, Button } from "react-bootstrap";
 
 function Navbar() {
   const { user, logout } = useContext(AuthContext);
 
   return (
-    <nav className="navbar navbar-expand-lg bg-white shadow-sm py-3">
-      <div className="container">
-        <Link className="navbar-brand fw-bold fs-3 text-success" to="/">
+    <RBNavbar expand="lg" bg="white" className="shadow-sm py-3">
+      <Container>
+        {/* Brand */}
+        <RBNavbar.Brand as={Link} to="/" className="fw-bold fs-3 text-success">
           DeliBook
-        </Link>
+        </RBNavbar.Brand>
 
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
+        {/* Mobile toggle */}
+        <RBNavbar.Toggle aria-controls="basic-navbar-nav" />
 
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav mx-auto gap-3">
-            <li className="nav-item">
-              <Link className="nav-link fw-semibold" to="/">Home</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link fw-semibold" to="/hotels">Hotels</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link fw-semibold" to="/about">About</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link fw-semibold" to="/contact">Contact</Link>
-            </li>
-          </ul>
+        {/* Nav Links */}
+        <RBNavbar.Collapse id="basic-navbar-nav">
+          <Nav className="mx-auto gap-3">
+            <Nav.Link
+              as={Link}
+              to="/"
+              className="fw-semibold nav-link-hover"
+            >
+              Home
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
+              to="/hotels"
+              className="fw-semibold nav-link-hover"
+            >
+              Hotels
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
+              to="/about"
+              className="fw-semibold nav-link-hover"
+            >
+              About
+            </Nav.Link>
+            <Nav.Link
+              as={Link}
+              to="/contact"
+              className="fw-semibold nav-link-hover"
+            >
+              Contact
+            </Nav.Link>
+          </Nav>
 
-          <ul className="navbar-nav ms-auto gap-3">
+          {/* Right Side */}
+          <Nav className="ms-auto gap-3 align-items-center">
             {!user ? (
               <>
-                <li className="nav-item">
-                  <Link className="btn btn-outline-success px-3" to="/login">Sign In</Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="btn btn-success px-3" to="/register">Sign Up</Link>
-                </li>
+                <Button
+                  as={Link}
+                  to="/login"
+                  variant="outline-success"
+                  className="px-3 py-1 fw-semibold"
+                >
+                  Sign In
+                </Button>
+                <Button
+                  as={Link}
+                  to="/register"
+                  variant="success"
+                  className="px-3 py-1 fw-semibold"
+                >
+                  Sign Up
+                </Button>
               </>
             ) : (
-              <li className="nav-item dropdown">
-                <span
-                  className="nav-link dropdown-toggle fw-semibold"
-                  role="button"
-                  data-bs-toggle="dropdown"
+              <Dropdown align="end">
+                <Dropdown.Toggle
+                  variant="light"
+                  id="dropdown-user"
+                  className="d-flex align-items-center border-0 shadow-sm px-2 py-1 rounded-circle hover-shadow"
+                  style={{ minWidth: "auto" }}
                 >
-                  {/* Show user's name */}
-                  {user.name}
-                </span>
-                <ul className="dropdown-menu dropdown-menu-end">
-                  <li>
-                    <Link className="dropdown-item" to="/profile">Profile</Link>
-                  </li>
-                  <li>
-                    <button className="dropdown-item" onClick={logout}>
-                      Logout
-                    </button>
-                  </li>
-                </ul>
-              </li>
+                  <FaUserCircle size={28} className="text-success" />
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu className="shadow-sm rounded-3 mt-2">
+                  <Dropdown.Item as={Link} to="/profile" className="fw-semibold">
+                    Profile
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={logout} className="fw-semibold">
+                    Logout
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
             )}
-          </ul>
-        </div>
-      </div>
-    </nav>
+          </Nav>
+        </RBNavbar.Collapse>
+      </Container>
+
+      {/* Additional styling */}
+      <style jsx>{`
+        .nav-link-hover {
+          transition: all 0.2s ease-in-out;
+        }
+        .nav-link-hover:hover {
+          color: #28a745 !important;
+          text-decoration: underline;
+        }
+        .hover-shadow:hover {
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+      `}</style>
+    </RBNavbar>
   );
 }
 
