@@ -32,7 +32,7 @@ function ContactUs() {
           padding: 12px;
           color: white;
           border-radius: 8px;
-          background: linear-gradient(to right, #9645ff, #ff4f81, #ff8a00);
+          background: linear-gradient(to right, #28a745, #28a745, #28a745);
         }
 
         .contact-title {

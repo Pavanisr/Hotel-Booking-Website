@@ -31,7 +31,7 @@ function About() {
 
         <button
           style={{
-            background: "#333",
+            background: "#28a745",
             color: "white",
             padding: "10px 25px",
             border: "none",

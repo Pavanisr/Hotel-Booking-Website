@@ -12,7 +12,7 @@ function Navbar() {
       <Container>
         {/* Brand */}
         <RBNavbar.Brand as={Link} to="/" className="fw-bold fs-3 text-success">
-          DeliBook
+          BookEasy
         </RBNavbar.Brand>
 
         {/* Mobile toggle */}
@@ -98,7 +98,7 @@ function Navbar() {
       </Container>
 
       {/* Additional styling */}
-      <style jsx>{`
+      <style>{`
         .nav-link-hover {
           transition: all 0.2s ease-in-out;
         }

@@ -11,7 +11,7 @@ import Footer from "./components/footer";
 import Home from "./pages/Home";
 import Login from "./pages/login";
 import Register from "./pages/register";
-import Bookings from "./pages/bookings";
+
 import Profile from "./pages/profile";
 
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -26,7 +26,7 @@ root.render(
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/bookings" element={<Bookings />} />
+          
           <Route path="/profile" element={<Profile />} />
         </Routes>
       

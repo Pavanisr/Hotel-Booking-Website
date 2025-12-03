@@ -5,7 +5,7 @@ function Footer() {
     <footer>
       <style>{`
         .custom-footer {
-          background: #fafafa;
+          background: #28a745;
           padding: 60px 0;
           margin-top: 40px;
         }
@@ -17,7 +17,7 @@ function Footer() {
         }
 
         .footer-text {
-          color: #555;
+          color: #fff9f9ff;
           font-size: 14px;
           margin-bottom: 6px;
         }
@@ -29,21 +29,21 @@ function Footer() {
         }
 
         .footer-links li {
-          color: #555;
+          color: #f5eeeeff;
           font-size: 14px;
           margin-bottom: 8px;
           cursor: pointer;
         }
 
         .footer-links li:hover {
-          color: #000;
+          color: #c8c0c0ff;
         }
 
         .footer-social i {
           font-size: 20px;
           margin-right: 15px;
           cursor: pointer;
-          color: #666;
+          color: #e8e8e8ff;
         }
 
         .footer-social i:hover {
@@ -53,7 +53,7 @@ function Footer() {
         .footer-bottom {
           padding-top: 25px;
           text-align: center;
-          color: #777;
+          color: #d5c5c5ff;
           border-top: 1px solid #e5e5e5;
           margin-top: 40px;
           font-size: 14px;
@@ -66,9 +66,9 @@ function Footer() {
 
             {/* Column 1 */}
             <div className="col-md-3">
-              <h6 className="footer-title">AR-SHAKIR</h6>
-              <p className="footer-text">arshakir123@gmail.com</p>
-              <p className="footer-text">+458 483 5846</p>
+              <h6 className="footer-title">Hotel bookings</h6>
+              <p className="footer-text">bookeasy@gmail.com</p>
+              <p className="footer-text">+94 73 483 5846</p>
 
               <div className="footer-social mt-3">
                 <i>📸</i>
